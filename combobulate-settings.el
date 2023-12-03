@@ -364,6 +364,10 @@ use the name of the face to highlight with. See
     (css . combobulate-css-setup)
     (yaml . combobulate-yaml-setup)
     (toml . combobulate-toml-setup)
+    (rust . combobulate-setup-rust)
+    (cpp . combobulate-setup-cpp)
+    (go . combobulate-setup-go)
+    ;; note: private mode; not yet released.
     (html . combobulate-html-setup))
   "Alist of setup functions to call when \\[combobulate-mode] is enabled.
 

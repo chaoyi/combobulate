@@ -58,6 +58,8 @@
 (require 'combobulate-yaml)
 (require 'combobulate-json)
 (require 'combobulate-go)
+(require 'combobulate-rust)
+(require 'combobulate-cpp)
 ;;; end language support
 
 (provide 'combobulate)
