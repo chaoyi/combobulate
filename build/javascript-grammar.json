@@ -5078,7 +5078,7 @@
               },
               {
                 "type": "PATTERN",
-                "value": "u{[0-9a-fA-F]+}"
+                "value": "u\\{[0-9a-fA-F]+\\}"
               },
               {
                 "type": "PATTERN",
@@ -6298,6 +6298,18 @@
           "value": "static"
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_automatic_semicolon"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "FIELD",
           "name": "body",
           "content": {
@@ -6693,6 +6705,10 @@
     [
       "binary_expression",
       "_initializer"
+    ],
+    [
+      "class_static_block",
+      "_property_name"
     ]
   ],
   "precedences": [
@@ -6890,7 +6906,6 @@
   "inline": [
     "_call_signature",
     "_formal_parameter",
-    "statement",
     "_expressions",
     "_semicolon",
     "_identifier",
