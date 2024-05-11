@@ -99,7 +99,7 @@
    ["Hierarchical"
     ("C-M-u" "Up into list" combobulate-navigate-up :transient t)
     ("C-M-d" "Down into list" combobulate-navigate-down :transient t)
-    ("C-M-p" "Backward sibling" combobulate-navigate-previous :transient t)
+    ("C-M-b" "Backward sibling" combobulate-navigate-previous :transient t)
     ("C-M-n" "Forward sibling" combobulate-navigate-next :transient t)]
    [:description (lambda () (concat
                         (propertize "Defun " 'face 'transient-heading)

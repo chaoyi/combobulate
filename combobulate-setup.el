@@ -127,7 +127,7 @@
     (define-key map (kbd "C-M-e") #'combobulate-navigate-end-of-defun)
     (define-key map (kbd "C-M-h") #'combobulate-mark-defun)
     (define-key map (kbd "C-M-n") #'combobulate-navigate-next)
-    (define-key map (kbd "C-M-p") #'combobulate-navigate-previous)
+    (define-key map (kbd "C-M-b") #'combobulate-navigate-previous)
     (define-key map (kbd "C-M-t") #'combobulate-transpose-sexps)
     (define-key map (kbd "C-M-u") #'combobulate-navigate-up)
     (define-key map (kbd "M-<up>") #'combobulate-splice-up)
