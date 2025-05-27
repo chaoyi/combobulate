@@ -83,6 +83,8 @@
 ;;;###autoload
 (require 'combobulate-json)
 ;;;###autoload
+(require 'combobulate-rust)
+;;;###autoload
 (require 'combobulate-go)
 ;;; end language support
 

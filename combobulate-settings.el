@@ -290,6 +290,7 @@ use the name of the face to highlight with. See
   '((python . combobulate-python-setup)
     (tsx . combobulate-js-ts-setup)
     (javascript . combobulate-js-ts-setup)
+    (rust . combobulate-rust-setup)
     (go . combobulate-go-setup)
     (typescript . combobulate-js-ts-setup)
     (jsx . combobulate-js-ts-setup)

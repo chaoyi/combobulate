@@ -8,7 +8,7 @@ LABEL MAINTAINER "Mickey Petersen at mastering emacs"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN sed -i 's/# deb-src/deb-src/' /etc/apt/sources.list \
+RUN sed -i 's/Types: deb/Types: deb deb-src/' /etc/apt/sources.list.d/*.sources \
     && apt-get update \
     && apt-get build-dep -y emacs
 

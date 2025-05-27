@@ -206,7 +206,7 @@ Uses `point' and `mark' to infer the boundaries."
 
 If NODE-ONLY is non-nil then only the node texts are returned"
   (mapcar (lambda (node) (if node-only (combobulate-node-text node)
-                      (combobulate-node-text (cdr node))))
+                          (combobulate-node-text (cdr node))))
           (combobulate-query-search node query t t)))
 
 (defun combobulate-linear-siblings (node &optional anonymous)
@@ -287,10 +287,10 @@ self-similar to NODE is skipped"
        (or exclude-end (<= (combobulate-node-start node)
                            (save-excursion (goto-char (point-min))
                                            (forward-line (1- (line-number-at-pos (window-end))))
-                                           (point))))
+                                           (point))))))
        ;; Too slow?
        ;; (pos-visible-in-window-p (combobulate-node-start node) (selected-window))
-       ))
+       
 
 (defun combobulate-node-on-or-after-node-p (node-a node-b)
   "Return t if NODE-A is positioned on or after NODE-B"
@@ -437,8 +437,8 @@ Returns a list of parents ordered closest to farthest."
                   (throw 'done this))
                  ((member (combobulate-node-type smallest-node) node-types)
                   (throw 'done smallest-node))
-                 (t (setq this (combobulate-node-parent this))))
-                ))))
+                 (t (setq this (combobulate-node-parent this))))))))
+                
       node)))
 
 (defun combobulate--get-all-navigable-nodes-at-point ()
@@ -733,10 +733,10 @@ that technically has another immediate parent."
 (defun combobulate-forward-sexp-function-1 (backward)
   (car (seq-filter
         (lambda (node) (and (combobulate-navigable-node-p node)
-                       (funcall (if backward
-                                    #'combobulate-point-at-end-of-node-p
-                                  #'combobulate-point-at-beginning-of-node-p)
-                                node)))
+                        (funcall (if backward
+                                     #'combobulate-point-at-end-of-node-p
+                                   #'combobulate-point-at-beginning-of-node-p)
+                                 node)))
         (combobulate-all-nodes-at-point backward))))
 
 (defun combobulate-forward-sexp-function (arg)
@@ -1174,6 +1174,17 @@ first list-like structure ahead of point."
   (with-argument-repetition arg
     (combobulate-visual-move-to-node (combobulate--navigate-beginning-of-defun))))
 
+(defun combobulate--navigate-self-end ()
+  (with-navigation-nodes (:skip-prefix t :procedures (combobulate-read procedures-sibling))
+    (combobulate-nav-get-self-sibling  ;; << 1. Get the "current" node based on sibling procedures
+     (combobulate--get-nearest-navigable-node))))
+
+(defun combobulate-navigate-self-end (&optional arg)
+  "Move to the end of the current navigable node ARG times"
+  (interactive "^p")
+  (with-argument-repetition arg
+    (combobulate-visual-move-to-node (combobulate--navigate-self-end) t))) ;; << 2. The 't' moves to the END
+
 (defun combobulate-build-nested-query (nodes &optional insert-fn)
   "Build a nested query from NODES and call INSERT-FN for each one.
 
@@ -1287,9 +1298,9 @@ removed."
                 ((and (pred consp)
                       `(,first . ,_)
                       (guard (or (consp first)
-                                 (stringp first)))
+                                 (stringp first))))
                       ;; (guard (not (member first '(_ (_)))))
-                      )
+                      
                  'sibling-query)
                 ((pred consp) 'sub-query)
                 ((pred symbolp) 'node)
@@ -1419,7 +1430,7 @@ removed."
                                    wildcard named-wildcard)))
                   (guard (state-p '(node field)))
                   `,sub-query)
-             (let* ((starting-children children)
+             (let* ((starting-children children))
                     ;; determine if it is a wildcard node and what type
                     ;; (is-wildcard-node (member term-type '(named-wildcard
                     ;;                                       wildcard)))
@@ -1430,7 +1441,7 @@ removed."
                     ;;      (or (and (symbolp sub-query) (not is-wildcard-node))
                     ;;          ;; (eq term-type 'sibling-query)
                     ;;          (consp sub-query))))
-                    )
+                    
 
                (pcase state
                  ('node
