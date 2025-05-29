@@ -85,6 +85,8 @@
 ;;;###autoload
 (require 'combobulate-rust)
 ;;;###autoload
+(require 'combobulate-cpp)
+;;;###autoload
 (require 'combobulate-go)
 ;;; end language support
 
