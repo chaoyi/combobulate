@@ -136,14 +136,14 @@
     (define-key map (kbd "M-<down>") #'combobulate-splice-down)
     (define-key map (kbd "M-<left>") #'combobulate-splice-self)
     (define-key map (kbd "M-<right>") #'combobulate-splice-parent)
-    (define-key map (kbd "M-N") #'combobulate-drag-down)
-    (define-key map (kbd "M-P") #'combobulate-drag-up)
+    ; (define-key map (kbd "M-N") #'combobulate-drag-down)
+    ; (define-key map (kbd "M-P") #'combobulate-drag-up)
     (define-key map (kbd "M-a") #'combobulate-navigate-logical-previous)
     (define-key map (kbd "M-e") #'combobulate-navigate-logical-next)
     (define-key map (kbd "M-h") #'combobulate-mark-node-dwim)
     (define-key map (kbd "M-k") #'combobulate-kill-node-dwim)
-    (define-key map (kbd "M-n") #'combobulate-navigate-sequence-next)
-    (define-key map (kbd "M-p") #'combobulate-navigate-sequence-previous)
+    ; (define-key map (kbd "M-n") #'combobulate-navigate-sequence-next)
+    ; (define-key map (kbd "M-p") #'combobulate-navigate-sequence-previous)
     map))
 
 

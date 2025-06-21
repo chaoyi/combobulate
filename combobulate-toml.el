@@ -87,7 +87,7 @@
           :selector (:match-children t))
          ;; pair-wise navigation (key side)
          (:activation-nodes
-          ((:nodes ("pair") :position at :has-parent ("table" "table_array_element")))
+          ((:nodes ("pair") :position at :has-parent ("table" "table_array_element" "inline_table")))
           :selector (:match-children (:match-rules ("pair"))))
          (:activation-nodes
           ((:nodes
@@ -102,7 +102,7 @@
        '(;; in and out of tables
          (:activation-nodes
           ((:nodes ("table" "table_array_element") :position at))
-          :selector (:choose node :match-children (:match-rules (exclude (all) "bare_key"))))
+          :selector (:choose node :match-children (:match-rules (exclude (all) "bare_key" "dotted_key"))))
          ;; general navigation
          (:activation-nodes
           ((:nodes (exclude (all) "string") :position at))

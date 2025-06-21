@@ -36,37 +36,6 @@
   :group 'combobulate
   :prefix "combobulate-rust-")
 
-(defun combobulate-rust-pretty-print-node-name (node default-name)
-  "Pretty printer for Rust nodes."
-  (combobulate-string-truncate
-   (replace-regexp-in-string
-    (rx (| (>= 2 " ") "\n")) ""
-    (pcase (combobulate-node-type node)
-      ("function_item"
-       (concat "fn " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")
-               (or (combobulate-node-text (combobulate-node-child-by-field node "parameters")) "()")))
-      ("struct_item"
-       (concat "struct " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ("enum_item"
-       (concat "enum " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ("impl_item"
-       (let ((type-node (combobulate-node-child-by-field node "type"))
-             (trait-node (combobulate-node-child-by-field node "trait")))
-         (if trait-node
-             (concat "impl " (or (combobulate-node-text trait-node) "") " for " (or (combobulate-node-text type-node) ""))
-           (concat "impl " (or (combobulate-node-text type-node) "")))))
-      ("mod_item"
-       (concat "mod " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ("trait_item"
-       (concat "trait " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ("const_item"
-       (concat "const " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ("static_item"
-       (concat "static " (or (combobulate-node-text (combobulate-node-child-by-field node "name")) "")))
-      ((or "identifier" "type_identifier" "field_identifier") (combobulate-node-text node))
-      (_ default-name)))
-   60))
-
 (eval-and-compile
   (defconst combobulate-rust-definitions
     '((pretty-print-node-name-function #'combobulate-rust-pretty-print-node-name)
@@ -87,13 +56,6 @@
           :selector (:choose parent :match-children t))
 
          (:activation-nodes
-          ((:nodes ((rule "arguments"))
-            :has-parent ("arguments")))
-          :selector (:choose
-                     parent
-                     :match-children t))
-
-         (:activation-nodes
           ((:nodes ((rule "block"))
             :position at
             :has-parent ("block")))
@@ -110,8 +72,19 @@
           :selector (:choose node :match-children t))
 
          (:activation-nodes
+          ((:nodes ("enum_variant_list")))
+          :selector (:choose node :match-children t))
+
+         (:activation-nodes
           ((:nodes ((rule "field_declaration_list"))
             :has-parent ("field_declaration_list")))
+          :selector (:choose
+                     parent
+                     :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "arguments"))
+            :has-parent ("arguments")))
           :selector (:choose
                      parent
                      :match-children t))))
@@ -123,12 +96,21 @@
           :selector (:choose node
                      :match-query
                      (:query ((declaration_list (_)+ @match)))))
+
          (:activation-nodes
           ((:nodes ("struct_item")
             :position at))
           :selector (:choose node
                      :match-query
                      (:query ((field_declaration_list (_)+ @match)))))
+
+         (:activation-nodes
+          ((:nodes ("enum_item")
+            :position at))
+          :selector (:choose node
+                     :match-query
+                     (:query ((enum_variant_list (_)+ @match)))))
+
          (:activation-nodes
           ((:nodes ("function_item")
             :position at))
@@ -149,7 +131,7 @@
             :position at))
           :selector (:choose node
                      :match-query
-                     (:query ((match_arm value: (block (_) @match))))))
+                     (:query ((match_arm value: (_) @match)))))
 
          (:activation-nodes
           ((:nodes ("match_expression")
