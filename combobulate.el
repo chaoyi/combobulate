@@ -87,6 +87,8 @@
 ;;;###autoload
 (require 'combobulate-cpp)
 ;;;###autoload
+(require 'combobulate-proto)
+;;;###autoload
 (require 'combobulate-go)
 ;;; end language support
 

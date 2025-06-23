@@ -292,6 +292,7 @@ use the name of the face to highlight with. See
     (javascript . combobulate-js-ts-setup)
     (rust . combobulate-rust-setup)
     (c++ . combobulate-c++-setup)
+    (proto . combobulate-proto-setup)
     (go . combobulate-go-setup)
     (typescript . combobulate-js-ts-setup)
     (jsx . combobulate-js-ts-setup)
