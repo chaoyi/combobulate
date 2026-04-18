@@ -36,14 +36,87 @@
   :group 'combobulate
   :prefix "combobulate-rust-")
 
+(defun combobulate-rust-pretty-print-node-name (node default-name)
+  "Pretty printer for Rust nodes."
+  (combobulate-string-truncate
+   (replace-regexp-in-string
+    (rx (| (>= 2 " ") "\n")) ""
+    (pcase (combobulate-node-type node)
+      ("function_item"
+       (concat "fn "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("struct_item"
+       (concat "struct "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("enum_item"
+       (concat "enum "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("union_item"
+       (concat "union "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("impl_item"
+       (let ((trait (combobulate-node-child-by-field node "trait"))
+             (type (combobulate-node-child-by-field node "type")))
+         (if trait
+             (concat "impl " (combobulate-node-text trait)
+                     " for " (combobulate-node-text type))
+           (concat "impl " (or (combobulate-node-text type) "?")))))
+      ("trait_item"
+       (concat "trait "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("mod_item"
+       (concat "mod "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("macro_definition"
+       (concat "macro_rules! "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("const_item"
+       (concat "const "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("static_item"
+       (concat "static "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("type_item"
+       (concat "type "
+               (or (combobulate-node-text
+                    (combobulate-node-child-by-field node "name"))
+                   "?")))
+      ("foreign_mod_item" "extern { ... }")
+      ((or "identifier" "type_identifier" "field_identifier")
+       (combobulate-node-text node))
+      (_ default-name)))
+   40))
+
 (eval-and-compile
   (defconst combobulate-rust-definitions
     '((pretty-print-node-name-function #'combobulate-rust-pretty-print-node-name)
       (plausible-separators '("," ";"))
-      (procedure-discard-rules '("line_comment" "block_comment" "use_declaration" "attribute_item" "visibility_modifier"))
+      (procedure-discard-rules '("line_comment" "block_comment" "doc_comment"
+                                  "attribute_item" "inner_attribute_item"
+                                  "visibility_modifier"))
 
       (procedures-defun
-       '((:activation-nodes ((:nodes ("function_item" "struct_item" "enum_item" "impl_item" "trait_item" "mod_item" "macro_definition" "const_item" "static_item" "type_alias"))))))
+       '((:activation-nodes ((:nodes ("function_item" "struct_item" "enum_item" "union_item"
+                                      "impl_item" "trait_item" "mod_item" "macro_definition"
+                                      "const_item" "static_item" "type_item" "foreign_mod_item"))))))
 
       (procedures-logical
        '((:activation-nodes ((:nodes (all))))))
@@ -78,27 +151,58 @@
          (:activation-nodes
           ((:nodes ((rule "field_declaration_list"))
             :has-parent ("field_declaration_list")))
-          :selector (:choose
-                     parent
-                     :match-children t))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "ordered_field_declaration_list"))
+            :has-parent ("ordered_field_declaration_list")))
+          :selector (:choose parent :match-children t))
 
          (:activation-nodes
           ((:nodes ((rule "arguments"))
             :has-parent ("arguments")))
-          :selector (:choose
-                     parent
-                     :match-children t))))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "parameters"))
+            :has-parent ("parameters")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "closure_parameters"))
+            :has-parent ("closure_parameters")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "field_initializer_list"))
+            :has-parent ("field_initializer_list")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "use_list"))
+            :has-parent ("use_list")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "type_arguments"))
+            :has-parent ("type_arguments")))
+          :selector (:choose parent :match-children t))
+
+         (:activation-nodes
+          ((:nodes ((rule "type_parameters"))
+            :has-parent ("type_parameters")))
+          :selector (:choose parent :match-children t))))
 
       (procedures-hierarchy
        `((:activation-nodes
-          ((:nodes ("impl_item" "mod_item")
+          ((:nodes ("impl_item" "mod_item" "trait_item" "foreign_mod_item")
             :position at))
           :selector (:choose node
                      :match-query
                      (:query ((declaration_list (_)+ @match)))))
 
          (:activation-nodes
-          ((:nodes ("struct_item")
+          ((:nodes ("struct_item" "union_item")
             :position at))
           :selector (:choose node
                      :match-query
@@ -120,18 +224,26 @@
                       :query ((function_item body: (block (_) @match))))))
 
          (:activation-nodes
-          ((:nodes ("let_declaration")
+          ((:nodes ("if_expression")
             :position at))
           :selector (:choose node
                      :match-query
-                     (:query ((let_declaration value: (_) @match)))))
+                     (:query ((if_expression consequence: (block (_) @match))))))
 
          (:activation-nodes
-          ((:nodes ("match_arm")
+          ((:nodes ("else_clause")
             :position at))
           :selector (:choose node
                      :match-query
-                     (:query ((match_arm value: (_) @match)))))
+                     (:query ((else_clause [(block (_) @match) (if_expression) @match])))))
+
+         (:activation-nodes
+          ((:nodes ("for_expression" "while_expression" "loop_expression")
+            :position at))
+          :selector (:choose node
+                     :match-query
+                     (:query ([(for_expression) (while_expression) (loop_expression)]
+                              body: (block (_) @match)))))
 
          (:activation-nodes
           ((:nodes ("match_expression")
@@ -141,18 +253,18 @@
                      (:query ((match_expression body: (match_block (match_arm) @match))))))
 
          (:activation-nodes
-          ((:nodes ("if_expression")
+          ((:nodes ("match_arm")
             :position at))
           :selector (:choose node
                      :match-query
-                     (:query ((if_expression consequence: (block (_) @match))))))
+                     (:query ((match_arm value: (_) @match)))))
 
          (:activation-nodes
-          ((:nodes ("for_expression")
+          ((:nodes ("let_declaration")
             :position at))
           :selector (:choose node
                      :match-query
-                     (:query ((for_expression body: (block (_) @match))))))
+                     (:query ((let_declaration value: (_) @match)))))
 
          (:activation-nodes
           ((:nodes ("closure_expression")
@@ -161,21 +273,22 @@
                      :match-query
                      (:query ((closure_expression body: (_) @match)))))
 
-         ;; need to think through below
+         ;; unsafe, async, gen, try blocks have unnamed block children
+         (:activation-nodes
+          ((:nodes ("unsafe_block" "async_block" "gen_block" "try_block")
+            :position at))
+          :selector (:choose node
+                     :match-query
+                     (:query ([(unsafe_block) (async_block) (gen_block) (try_block)]
+                              (block (_) @match)))))
 
-         ;; (:activation-nodes
-         ;;  ((:nodes ("call_expression")
-         ;;    :position any))
-         ;;  :selector (:choose node
-         ;;             :match-query
-         ;;             (:query ((call_expression function: (_) @match)))))
-
-         ;; (:activation-nodes
-         ;;  ((:nodes ("field_expression")
-         ;;    :position any))
-         ;;  :selector (:choose node
-         ;;             :match-query
-         ;;             (:query ((field_expression value: (_) @match)))))
+         ;; const_block has a named body: field
+         (:activation-nodes
+          ((:nodes ("const_block")
+            :position at))
+          :selector (:choose node
+                     :match-query
+                     (:query ((const_block body: (block (_) @match))))))
 
          (:activation-nodes
           ((:nodes ((all))))

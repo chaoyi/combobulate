@@ -119,7 +119,7 @@
       (procedures-sexp nil)
       (plausible-separators '(";" "," "\n"))
       (procedures-defun
-       '((:activation-nodes ((:nodes ("function_declaration"))))))
+       '((:activation-nodes ((:nodes ("function_declaration" "method_declaration" "type_declaration"))))))
       (procedures-logical
        '((:activation-nodes ((:nodes (all))))))
       (procedures-sibling

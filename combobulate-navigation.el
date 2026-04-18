@@ -1185,6 +1185,93 @@ first list-like structure ahead of point."
   (with-argument-repetition arg
     (combobulate-visual-move-to-node (combobulate--navigate-self-end) t))) ;; << 2. The 't' moves to the END
 
+(defun combobulate--current-node ()
+  "Find the current navigable node, checking both beginning and end positions."
+  (or (and (> (point) (point-min))
+           (car (seq-filter
+                 (lambda (node)
+                   (and (combobulate-navigable-node-p node)
+                        (combobulate-point-at-end-of-node-p node)))
+                 (combobulate-all-nodes-at-point t))))
+      (combobulate--get-nearest-navigable-node)))
+
+(defun combobulate--navigate-forward-sexp ()
+  "Navigate forward over the current sexp, going up if at last sibling.
+From the start of a node, goes to its end.
+From the end of a node, goes to the end of the next sibling (or up to parent)."
+  (with-navigation-nodes (:skip-prefix t :procedures (combobulate-read procedures-sibling))
+    (let* ((node (combobulate--current-node)))
+      (when node
+        (if (combobulate-point-at-end-of-node-p node)
+            ;; At end of current node: jump over next sibling, or go up
+            (or (combobulate-nav-get-next-sibling node)
+                (combobulate-nav-get-parent node))
+          ;; At start/middle of node: jump to end of this node
+          node)))))
+
+(defun combobulate-navigate-forward-sexp (&optional arg)
+  "Move forward over the current sexp ARG times.
+Moves to end of next sibling, or end of parent if at last sibling."
+  (interactive "^p")
+  (with-argument-repetition arg
+    (combobulate-visual-move-to-node (combobulate--navigate-forward-sexp) t)))
+
+(defun combobulate--navigate-backward-sexp ()
+  "Navigate backward over the current sexp, going up if at first sibling.
+From the end of a node, goes to its start.
+From the start of a node, goes to the start of the previous sibling (or up to parent)."
+  (with-navigation-nodes (:procedures (combobulate-read procedures-sibling))
+    (let* ((node (combobulate--current-node)))
+      (when node
+        (if (combobulate-point-at-beginning-of-node-p node)
+            ;; At start of current node: jump over prev sibling, or go up
+            (or (combobulate-nav-get-prev-sibling node)
+                (combobulate-nav-get-parent node))
+          ;; At end/middle of node: jump to start of this node
+          node)))))
+
+(defun combobulate-navigate-backward-sexp (&optional arg)
+  "Move backward over the current sexp ARG times.
+Moves to start of previous sibling, or start of parent if at first sibling."
+  (interactive "^p")
+  (with-argument-repetition arg
+    (combobulate-visual-move-to-node (combobulate--navigate-backward-sexp))))
+
+(defun combobulate--navigate-sibling (direction)
+  "Navigate to the next or previous sibling in DIRECTION, wrapping around.
+DIRECTION is `forward' or `backward'."
+  (with-navigation-nodes (:skip-prefix (eq direction 'forward)
+                          :procedures (combobulate-read procedures-sibling))
+    (let* ((node (combobulate--current-node))
+           (sibling (if (eq direction 'forward)
+                        (combobulate-nav-get-next-sibling node)
+                      (combobulate-nav-get-prev-sibling node))))
+      (or sibling
+          ;; No sibling in direction; wrap around.
+          ;; Must go to node start so procedure matching uses the right context.
+          (when node
+            (save-excursion
+              (combobulate--goto-node node)
+              (let ((siblings (combobulate-nav-get-siblings node)))
+                (when siblings
+                  (if (eq direction 'forward)
+                      (car siblings)
+                    (car (last siblings)))))))))))
+
+(defun combobulate-navigate-sibling-forward (&optional arg)
+  "Move to beginning of next sibling ARG times, wrapping around."
+  (interactive "^p")
+  (with-argument-repetition arg
+    (combobulate-visual-move-to-node
+     (combobulate--navigate-sibling 'forward))))
+
+(defun combobulate-navigate-sibling-backward (&optional arg)
+  "Move to end of previous sibling ARG times, wrapping around."
+  (interactive "^p")
+  (with-argument-repetition arg
+    (combobulate-visual-move-to-node
+     (combobulate--navigate-sibling 'backward) t)))
+
 (defun combobulate-build-nested-query (nodes &optional insert-fn)
   "Build a nested query from NODES and call INSERT-FN for each one.
 

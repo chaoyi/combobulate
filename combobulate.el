@@ -90,6 +90,8 @@
 (require 'combobulate-proto)
 ;;;###autoload
 (require 'combobulate-go)
+;;;###autoload
+(require 'combobulate-svelte)
 ;;; end language support
 
 (provide 'combobulate)
